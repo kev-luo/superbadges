@@ -103,7 +103,6 @@ export default class BoatSearchResults extends LightningElement {
   }
   // Check the current value of isLoading before dispatching the doneloading or loading custom event
   notifyLoading(isLoading) {
-    //   if(this.isLoading === isLoading) return
       this.isLoading = isLoading
       if(this.isLoading) {
           this.dispatchEvent(new CustomEvent('loading'));
