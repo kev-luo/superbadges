@@ -1,12 +1,12 @@
 {
-    "packageDirectories": [
-        {
-            "path": "force-app",
-            "default": true
-        }
-    ],
-    "name": "advanced-apex-specialist",
-    "namespace": "",
-    "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "54.0"
+  "packageDirectories": [
+    {
+      "path": "apexSpec-app",
+      "default": true
+    }
+  ],
+  "name": "advanced-apex-specialist",
+  "namespace": "",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "54.0"
 }

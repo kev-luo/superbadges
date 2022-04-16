@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>AnnouncementQueueable</members>
+    <members>ChartHelper</members>
+    <members>OrderExtension</members>
+    <members>OrderHelper</members>
+    <members>OrderTests</members>
+    <members>PackageTests</members>
+    <members>Product2Extension</members>
+    <members>Product2Helper</members>
+    <members>Product2Tests</members>
+    <members>TestDataFactory</members>
+    <name>ApexClass</name>
+  </types>
+  <types>
+    <members>OrderEdit</members>
+    <members>Product2New</members>
+    <name>ApexPage</name>
+  </types>
+  <types>
+    <members>orderTrigger</members>
+    <members>product2Trigger</members>
+    <name>ApexTrigger</name>
+  </types>
+  <types>
+    <members>Inventory_Level_Low</members>
+    <members>Select_One</members>
+    <name>CustomLabel</name>
+  </types>
+  <types>
+    <members>CustomLabels</members>
+    <name>CustomLabels</name>
+  </types>
+  <version>52.0</version>
+</Package>
