@@ -17,18 +17,7 @@ public with sharing class TestDataFactory {
    * @name CreateProducts
    * @description Constructs a list of Product2 records for unit tests
    **/
-  public List<Product2> ConstructProducts(Integer cnt) {
-    List<Product2> testProducts = new List<Product2>();
-    for (Integer i = 0; i < cnt; i++) {
-      testProducts.add(
-        new Product2(
-          Name = 'Test Product ' + cnt,
-          Family = 'Beverage',
-          IsActive = true,
-          Initial_Inventory__c = 10
-        )
-      );
-    }
+  public void ConstructProducts(Integer cnt) {
     //ToDo: Ensure this method returns a list, of size cnt, of uniquely named Product2 records
     //  with all the required fields populated
     //  and IsActive = true
