@@ -75,8 +75,8 @@ private class PackageTests {
       Initial_Inventory__c = 0
     );
     insert testProduct;
-    product2Helper.afterUpdate();
-    product2Helper.postAlerts(new List<Product2>{ testProduct });
+    // product2Helper.afterUpdate();
+    // product2Helper.postAlerts(new List<Product2>{ testProduct });
     Test.stopTest();
   }
 
@@ -103,7 +103,7 @@ private class PackageTests {
     announcementQueueable cls = new announcementQueueable();
     cls.toPost = announcements;
     try {
-      announcementQueueable.postAnnouncements(announcements);
+      //   announcementQueueable.postAnnouncements(announcements);
     } catch (Exception e) {
     }
     Test.stopTest();

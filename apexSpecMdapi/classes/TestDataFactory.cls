@@ -187,4 +187,15 @@ public with sharing class TestDataFactory {
     //TODO: Ensure this method calls each of the construct methods
     //  and inserts the results for use as test data.
   }
+
+  public static void VerifyQuantityOrdered(
+    Product2 originalProduct,
+    Product2 updatedProduct,
+    Integer qtyOrdered
+  ) {
+    System.assertEquals(
+      updatedProduct.Quantity_Ordered__c - originalProduct.Quantity_Ordered__c,
+      qtyOrdered
+    );
+  }
 }

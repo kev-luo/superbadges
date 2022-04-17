@@ -22,13 +22,10 @@ private class OrderTests {
       Product2 originalProduct = testProductsMap.get(p.Id);
       Product2 updatedProduct = p;
 
-      System.assertEquals(
-        true,
-        TestDataFactory.VerifyQuantityOrdered(
-          originalProduct,
-          updatedProduct,
-          Constants.DEFAULT_ROWS
-        )
+      TestDataFactory.VerifyQuantityOrdered(
+        originalProduct,
+        updatedProduct,
+        Constants.DEFAULT_ROWS
       );
     }
   }

@@ -188,12 +188,14 @@ public with sharing class TestDataFactory {
     //  and inserts the results for use as test data.
   }
 
-  public static Boolean VerifyQuantityOrdered(
+  public static void VerifyQuantityOrdered(
     Product2 originalProduct,
     Product2 updatedProduct,
     Integer qtyOrdered
   ) {
-    return updatedProduct.Quantity_Ordered__c =
-      originalProduct.Quantity_Ordered__c + qtyOrdered;
+    System.assertEquals(
+      updatedProduct.Quantity_Ordered__c - originalProduct.Quantity_Ordered__c,
+      qtyOrdered
+    );
   }
 }
