@@ -18,11 +18,71 @@ public class OrderExtension {
     if (orderRecord.Id != null) {
       orderRecord = queryOrderRecord(orderRecord.Id);
     }
+    loadInitOrderItemData();
+    loadChartData();
+    loadPriceBookEntries();
+    loadOrderItems();
   }
 
   //ToDo: Implement your own method to populate orderItemList
   //  that you will call after pagination and/or family selection
+  public void loadPriceBookEntries() {
+    String query = 'SELECT Id, UnitPrice, Product2Id, Pricebook2Id, Name, Product2.Name, Product2.Quantity_Remaining__c, Product2.Family, IsActive FROM PricebookEntry WHERE IsActive = true';
+    if (selectedFamily != Constants.SELECT_ONE && selectedFamily != null) {
+      query += ' AND Product2.Family = \'' + selectedFamily + '\'';
+    }
+    System.debug('query: ====> ' + query);
+    standardSetController = new ApexPages.StandardSetController(
+      Database.getQueryLocator(query)
+    );
+    standardSetController.setPageSize(Constants.DEFAULT_ROWS);
+  }
 
+  public void loadOrderItems() {
+    orderItemList = new List<OrderItem>();
+    if (
+      standardSetController.getRecords() != null &&
+      standardSetController.getRecords().size() > 0
+    ) {
+      for (SObject obj : standardSetController.getRecords()) {
+        PricebookEntry pbe = (PricebookEntry) obj;
+
+        if (orderItemMap.containsKey(pbe.Product2Id)) {
+          orderItemList.add(orderItemMap.get(pbe.Product2Id));
+        } else {
+          OrderItem oi = new OrderItem(
+            Quantity = 0,
+            PricebookEntryId = pbe.Id,
+            Product2Id = pbe.Product2Id,
+            UnitPrice = pbe.UnitPrice,
+            Product2 = pbe.Product2
+          );
+          orderItemList.add(oi);
+          orderItemMap.put(pbe.Product2Id, oi);
+        }
+      }
+    }
+  }
+
+  public void loadInitOrderItemData() {
+    for (OrderItem oi : orderRecord.OrderItems) {
+      orderItemMap.put(oi.Product2Id, oi);
+    }
+  }
+
+  public void loadChartData() {
+    this.total = 0;
+    pieData = new List<ChartHelper.ChartData>();
+    for (OrderItem oi : orderItemMap.values()) {
+      pieData.add(
+        new ChartHelper.ChartData(
+          oi.Product2.Name,
+          (oi.UnitPrice * oi.Quantity)
+        )
+      );
+      total += oi.UnitPrice * oi.Quantity;
+    }
+  }
   /**
    * @name OnFieldChange
    * @description
@@ -31,6 +91,11 @@ public class OrderExtension {
     //ToDo: Implement logic to store the values changed on the page
     //      and populate pieData
     //      and populate total
+    for (OrderItem oi : orderItemList) {
+      orderItemMap.put(oi.Product2Id, oi);
+    }
+
+    loadChartData();
   }
 
   /**
@@ -39,6 +104,8 @@ public class OrderExtension {
    **/
   public void SelectFamily() {
     //ToDo: Implement logic to filter based on the selected product family
+    loadPriceBookEntries();
+    loadOrderItems();
   }
 
   /**
@@ -47,6 +114,35 @@ public class OrderExtension {
    **/
   public void Save() {
     //ToDo: Implement logic to save the Order and populated OrderItems
+    System.Savepoint sp = Database.setSavepoint();
+    try {
+      if (orderRecord.Pricebook2Id == null) {
+        orderRecord.Pricebook2Id = Constants.STANDARD_PRICEBOOK_ID;
+      }
+      upsert orderRecord;
+
+      OrderItem[] upsertOrderItems = new List<OrderItem>();
+      OrderItem[] deleteOrderItems = new List<OrderItem>();
+
+      for (OrderItem oi : orderItemMap.values()) {
+        if (oi.Quantity > 0) {
+          if (oi.OrderId == null) {
+            oi.OrderId = orderRecord.Id;
+          }
+          upsertOrderItems.add(oi);
+        } else if (oi.Id != null) {
+          deleteOrderItems.add(oi);
+        }
+      }
+
+      upsert upsertOrderItems;
+      delete deleteOrderItems;
+    } catch (Exception e) {
+      Database.rollback(sp);
+      ApexPages.addMessage(
+        new ApexPages.Message(ApexPages.Severity.INFO, Constants.ERROR_MESSAGE)
+      );
+    }
   }
 
   /**
@@ -54,6 +150,8 @@ public class OrderExtension {
    * @description
    **/
   public void First() {
+    standardSetController.first();
+    loadOrderItems();
   }
 
   /**
@@ -61,6 +159,8 @@ public class OrderExtension {
    * @description
    **/
   public void Next() {
+    standardSetController.next();
+    loadOrderItems();
   }
 
   /**
@@ -68,6 +168,8 @@ public class OrderExtension {
    * @description
    **/
   public void Previous() {
+    standardSetController.previous();
+    loadOrderItems();
   }
 
   /**
@@ -75,6 +177,8 @@ public class OrderExtension {
    * @description
    **/
   public void Last() {
+    standardSetController.last();
+    loadOrderItems();
   }
 
   /**
@@ -82,7 +186,7 @@ public class OrderExtension {
    * @description
    **/
   public Boolean GetHasPrevious() {
-    return null;
+    return standardSetController.getHasPrevious();
   }
 
   /**
@@ -90,7 +194,7 @@ public class OrderExtension {
    * @description
    **/
   public Boolean GetHasNext() {
-    return null;
+    return standardSetController.getHasNext();
   }
 
   /**
@@ -98,7 +202,10 @@ public class OrderExtension {
    * @description
    **/
   public Integer GetTotalPages() {
-    return null;
+    Integer pages = (Integer) math.ceil(
+      standardSetController.getResultSize() / (Decimal) Constants.DEFAULT_ROWS
+    );
+    return pages;
   }
 
   /**
@@ -106,7 +213,7 @@ public class OrderExtension {
    * @description
    **/
   public Integer GetPageNumber() {
-    return null;
+    return standardSetController.getPageNumber();
   }
 
   /**
@@ -114,7 +221,12 @@ public class OrderExtension {
    * @description
    **/
   public List<SelectOption> GetFamilyOptions() {
-    return null;
+    List<SelectOption> options = new List<SelectOption>();
+    options.add(new SelectOption(Constants.SELECT_ONE, Constants.SELECT_ONE));
+    for (Schema.PicklistEntry pe : Constants.PRODUCT_FAMILY) {
+      options.add(new SelectOption(pe.getValue(), pe.getLabel()));
+    }
+    return options;
   }
 
   /**
